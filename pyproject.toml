@@ -27,6 +27,7 @@ classifiers = [
 dependencies = [
     "requests>=2.25.0",
     "click>=8.0.0",
+    "numpy>=1.21.0",
 ]
 
 [project.optional-dependencies]
