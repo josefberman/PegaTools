@@ -11,10 +11,14 @@ A comprehensive collection of specialized tools and utilities for data analysis,
 - **Multiple coordinate formats** (decimal, DMS, DM)
 
 ### 📈 Forecasting Tools
-- **Time series data management** with statistics
-- **Linear and exponential prediction models**
+- **Time series data management** with statistics and trend analysis
+- **Basic prediction models** (Linear, Exponential)
+- **Advanced Darts-based forecasters** (AutoARIMA, AutoETS, AutoTheta, AutoTBATS, Kalman)
+- **Naive forecasting methods** (Mean, Seasonal, Drift, Moving Average)
+- **Ensemble forecasting** with multiple model combinations
+- **Confidence intervals** and probabilistic forecasting
 - **Forecast accuracy metrics** (MAPE, RMSE, MAE, R²)
-- **Trend analysis** and pattern detection
+- **Model factory pattern** for easy forecaster creation
 
 ### 🔧 JSON Processing Tools
 - **Advanced JSON manipulation** with file I/O
@@ -43,6 +47,27 @@ cd pega-tools
 
 # Install in development mode with all dependencies
 pip install -e ".[dev]"
+
+# Install with advanced forecasting capabilities
+pip install -e ".[forecasting]"
+
+# Install with visualization support
+pip install -e ".[viz]"
+```
+
+### Optional Dependencies
+
+The package supports different installation levels:
+
+- **Basic**: Core functionality only
+- **Forecasting**: Includes Darts library for advanced forecasting models
+- **Visualization**: Includes matplotlib for plotting and visualization
+
+```bash
+# Install specific optional dependencies
+pip install pega-tools[forecasting]  # Advanced forecasting
+pip install pega-tools[viz]          # Visualization support
+pip install pega-tools[forecasting,viz]  # Both
 ```
 
 ## 🛠 Usage Examples
@@ -71,6 +96,7 @@ if location:
 
 ### Forecasting Tools
 
+#### Basic Forecasting
 ```python
 from pega_tools.forecast import LinearPredictor, TimeSeriesData, calculate_mape
 
@@ -91,6 +117,110 @@ actual = [26, 28, 30]
 mape = calculate_mape(actual, future_values)
 print(f"MAPE: {mape:.2f}%")
 ```
+
+#### Advanced Forecasting with Darts
+```python
+from pega_tools.forecast import DartsForecasterFactory, TimeSeriesData
+from datetime import datetime, timedelta
+
+# Create time series with timestamps
+dates = [datetime(2023, 1, 1) + timedelta(days=i) for i in range(100)]
+values = [10 + 0.1*i + 3*np.sin(2*np.pi*i/7) for i in range(100)]  # Trend + seasonality
+ts_data = TimeSeriesData(values, dates, frequency='daily')
+
+# Use AutoARIMA for automatic model selection
+forecaster = DartsForecasterFactory.create_forecaster('auto_arima', seasonal=True)
+forecaster.fit(ts_data)
+
+# Make predictions with confidence intervals
+result = forecaster.predict_with_confidence(periods=7)
+print(f"Predictions: {result['predictions']}")
+print(f"Lower bounds: {result['lower_bound']}")
+print(f"Upper bounds: {result['upper_bound']}")
+
+# Get model information
+info = forecaster.get_model_info()
+print(f"Model type: {info['model_type']}")
+print(f"Training samples: {info['training_samples']}")
+```
+
+#### Ensemble Forecasting
+```python
+from pega_tools.forecast import create_ensemble_forecast
+
+# Combine multiple models for better accuracy
+models = ['auto_arima', 'auto_ets', 'naive_drift']
+weights = [0.5, 0.3, 0.2]  # Custom weights
+
+result = create_ensemble_forecast(
+    ts_data, 
+    models=models, 
+    periods=10,
+    weights=weights
+)
+
+print(f"Ensemble predictions: {result['ensemble_predictions']}")
+print(f"Individual model results: {result['individual_predictions']}")
+
+# Available forecasting models
+factory = DartsForecasterFactory()
+available_models = factory.get_available_models()
+print(f"Available models: {available_models}")
+```
+
+#### Model Comparison and Selection
+```python
+# Test multiple models and compare performance
+models_to_test = ['auto_arima', 'auto_ets', 'auto_theta', 'naive_seasonal']
+results = {}
+
+for model_name in models_to_test:
+    try:
+        forecaster = DartsForecasterFactory.create_forecaster(model_name)
+        forecaster.fit(ts_data)
+        predictions = forecaster.predict(periods=5)
+        
+        # Calculate accuracy if you have test data
+        # accuracy = calculate_mape(actual_test_values, predictions)
+        
+        results[model_name] = {
+            'predictions': predictions,
+            'model_info': forecaster.get_model_info()
+        }
+        print(f"✓ {model_name}: Success")
+    except Exception as e:
+        print(f"✗ {model_name}: {e}")
+
+# Best model selection based on your criteria
+best_model = min(results.keys())  # Your selection logic here
+print(f"Selected model: {best_model}")
+```
+
+#### Available Forecasting Models
+
+The Darts integration provides access to state-of-the-art forecasting models:
+
+**🤖 Automatic Models** (Recommended for most use cases)
+- **AutoARIMA** - Automatic ARIMA model selection with seasonal support
+- **AutoETS** - Exponential smoothing with automatic parameter optimization
+- **AutoTheta** - Theta method for trend and seasonality forecasting
+- **AutoTBATS** - TBATS model for complex multiple seasonalities
+
+**🧠 Advanced Models**
+- **KalmanForecaster** - Kalman Filter-based state space modeling
+
+**📊 Naive Models** (Fast baselines)
+- **NaiveMean** - Simple mean-based forecasting
+- **NaiveSeasonal** - Seasonal naive method
+- **NaiveDrift** - Linear trend extrapolation
+- **NaiveMovingAverage** - Moving average forecasting
+
+**🔧 Model Features**
+- ✅ **Automatic parameter tuning** for most models
+- ✅ **Seasonal pattern detection** and handling
+- ✅ **Confidence intervals** for uncertainty quantification
+- ✅ **Ensemble forecasting** for improved accuracy
+- ✅ **Graceful fallback** when Darts is not installed
 
 ### JSON Processing Tools
 
@@ -175,7 +305,8 @@ pega_tools/
 │
 ├── forecast/            # Forecasting and prediction tools
 │   ├── data.py          # Time series data management
-│   ├── predictor.py     # Prediction models (linear, exponential)
+│   ├── predictor.py     # Basic prediction models (linear, exponential)
+│   ├── darts_forecasters.py  # Advanced Darts-based forecasters
 │   └── metrics.py       # Forecast accuracy metrics
 │
 ├── json/                # JSON processing and manipulation
@@ -240,6 +371,13 @@ pip install -e .
 - `requests` - HTTP client for API interactions
 - `click` - Command-line interface framework
 - `numpy` - Numerical computing for forecasting
+- `darts` - Advanced time series forecasting library (optional)
+
+### Optional Dependencies
+- `matplotlib` - Plotting and visualization (viz extra)
+- `pandas` - Data manipulation (included with darts)
+- `scikit-learn` - Machine learning utilities (included with darts)
+- `torch` - Deep learning framework (included with darts)
 
 ### Development Dependencies
 - `pytest` - Testing framework
@@ -268,20 +406,51 @@ pip install -e .
 
 ## 📋 Use Cases
 
-### Data Analysis
+### Data Analysis & Forecasting
+- **Time series forecasting** with state-of-the-art models
+- **Seasonal pattern detection** and trend analysis
+- **Ensemble modeling** for improved prediction accuracy
+- **Confidence interval estimation** for risk assessment
 - Geographic data processing and visualization
-- Time series forecasting and trend analysis
 - JSON data transformation and validation
+
+### Business Intelligence
+- **Sales forecasting** with multiple model comparison
+- **Demand planning** using seasonal and trend components
+- **Anomaly detection** in time series data
+- **Model performance evaluation** and selection
 
 ### Network Monitoring
 - Network traffic analysis and monitoring
 - Security incident investigation
-- Performance optimization
+- Performance optimization and capacity planning
 
 ### System Integration
 - API data processing and validation
-- Configuration file management
-- Data format conversion
+- Configuration file management and transformation
+- Data format conversion and standardization
+
+## 📁 Examples
+
+The `examples/` directory contains comprehensive demonstrations:
+
+- **`darts_forecasting_example.py`** - Complete Darts forecasting tutorial
+  - Individual model demonstrations
+  - Ensemble forecasting examples
+  - Confidence interval calculations
+  - Model comparison and selection
+  - Visualization with matplotlib
+
+Run the example:
+```bash
+cd examples/
+python darts_forecasting_example.py
+```
+
+**Note**: Install forecasting dependencies first:
+```bash
+pip install pega-tools[forecasting,viz]
+```
 
 ## 📝 License
 
@@ -289,10 +458,22 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📈 Changelog
 
-### 0.1.0 (2024)
+### 0.2.0 (2024) - Advanced Forecasting Update
+- 🚀 **NEW**: Darts library integration for advanced forecasting
+- 🤖 **NEW**: AutoARIMA, AutoETS, AutoTheta, AutoTBATS forecasters
+- 🧠 **NEW**: Kalman Filter and naive forecasting methods
+- 📊 **NEW**: Ensemble forecasting with multiple model combinations
+- 📈 **NEW**: Confidence intervals and probabilistic forecasting
+- 🏭 **NEW**: Model factory pattern for easy forecaster creation
+- ⚡ **NEW**: Graceful fallback when Darts is not installed
+- 📦 **NEW**: Optional dependencies for forecasting and visualization
+- 🧪 **ENHANCED**: Comprehensive test suite for all forecasting models
+- 📚 **ENHANCED**: Updated documentation with advanced examples
+
+### 0.1.0 (2024) - Initial Release
 - ✨ Initial release with four comprehensive sub-packages
 - 📍 Geographic tools with coordinate handling and geocoding
-- 📈 Forecasting tools with multiple prediction models
+- 📈 Basic forecasting tools with linear and exponential models
 - 🔧 JSON processing with validation and transformation
 - 🌐 PCAP analysis with network monitoring capabilities
 - 🎯 Command-line interface for common operations
