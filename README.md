@@ -9,6 +9,9 @@ A comprehensive collection of specialized tools and utilities for data analysis,
 - **Distance calculations** using Haversine formula
 - **Geocoding services** for address-to-coordinate conversion
 - **Multiple coordinate formats** (decimal, DMS, DM)
+- **Geographic visualization** with scatter plots, 2D histograms, and gradient analysis
+- **Temporal and spatial gradient visualization** for time-series geographic data
+- **Animated geographic visualizations** for dynamic data presentation
 
 ### 📈 Forecasting Tools
 - **Time series data management** with statistics and trend analysis
@@ -93,6 +96,91 @@ location = geocoder.geocode("Times Square, New York")
 if location:
     print(f"Times Square: {location}")
 ```
+
+#### Geographic Visualization
+```python
+from pega_tools.geographic import (
+    plot_geographic_scatter,
+    plot_geographic_histogram_2d,
+    plot_temporal_gradient_histogram,
+    plot_spatial_gradient_histogram,
+    create_geographic_animation
+)
+import matplotlib.pyplot as plt
+
+# Create sample geographic data
+coordinates = [
+    Coordinate(40.7128, -74.0060),  # New York
+    Coordinate(34.0522, -118.2437),  # Los Angeles
+    Coordinate(41.8781, -87.6298),  # Chicago
+    Coordinate(29.7604, -95.3698),  # Houston
+    Coordinate(39.9526, -75.1652),  # Philadelphia
+]
+
+values = [100, 85, 92, 78, 88]  # Associated values
+timestamps = [
+    datetime(2023, 1, 1, 10, 0),
+    datetime(2023, 1, 1, 11, 0),
+    datetime(2023, 1, 1, 12, 0),
+    datetime(2023, 1, 1, 13, 0),
+    datetime(2023, 1, 1, 14, 0),
+]
+
+# Scatter plot with values
+fig = plot_geographic_scatter(
+    coordinates=coordinates,
+    values=values,
+    title="City Activity Levels",
+    marker_size=values,
+    color_map="plasma",
+    background_map=True
+)
+plt.savefig("city_activity.png")
+plt.close(fig)
+
+# 2D histogram
+fig = plot_geographic_histogram_2d(
+    coordinates=coordinates,
+    title="Geographic Density",
+    bins=20,
+    color_map="viridis",
+    log_scale=True
+)
+plt.savefig("geographic_density.png")
+plt.close(fig)
+
+# Temporal gradient analysis
+fig = plot_temporal_gradient_histogram(
+    coordinates=coordinates,
+    timestamps=timestamps,
+    title="Temporal Geographic Analysis",
+    color_map="plasma"
+)
+plt.savefig("temporal_analysis.png")
+plt.close(fig)
+
+# Spatial gradient analysis
+fig = plot_spatial_gradient_histogram(
+    coordinates=coordinates,
+    values=values,
+    title="Spatial Value Distribution",
+    gradient_method="density",
+    color_map="coolwarm"
+)
+plt.savefig("spatial_gradient.png")
+plt.close(fig)
+
+# Create animation (requires matplotlib.animation)
+try:
+    output_file = create_geographic_animation(
+        coordinates=coordinates,
+        timestamps=timestamps,
+        values=values,
+        output_file="geographic_animation.gif"
+    )
+    print(f"Animation saved as: {output_file}")
+except ImportError:
+    print("Animation requires matplotlib.animation support")
 
 ### Forecasting Tools
 
@@ -301,7 +389,8 @@ pega_tools/
 ├── geographic/          # Geographic utilities and calculations
 │   ├── coordinates.py   # Coordinate handling and distance calculations
 │   ├── geocoding.py     # Address geocoding services
-│   └── utils.py         # Geographic utility functions
+│   ├── utils.py         # Geographic utility functions
+│   └── visualization.py # Geographic visualization tools
 │
 ├── forecast/            # Forecasting and prediction tools
 │   ├── data.py          # Time series data management
@@ -441,10 +530,18 @@ The `examples/` directory contains comprehensive demonstrations:
   - Model comparison and selection
   - Visualization with matplotlib
 
-Run the example:
+- **`geographic_visualization_example.py`** - Geographic visualization tutorial
+  - Scatter plots with customizable parameters
+  - 2D histogram visualizations
+  - Temporal and spatial gradient analysis
+  - Animated geographic visualizations
+  - Custom parameter configurations
+
+Run the examples:
 ```bash
 cd examples/
 python darts_forecasting_example.py
+python geographic_visualization_example.py
 ```
 
 **Note**: Install forecasting dependencies first:

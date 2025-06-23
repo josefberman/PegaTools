@@ -149,6 +149,217 @@ if address:
 
 ---
 
+## 🎨 Geographic Visualization Tools
+
+### Core Functions
+- **`plot_geographic_scatter()`** - Create scatter plots of geographic coordinates
+- **`plot_geographic_histogram_2d()`** - Generate 2D histograms of geographic data
+- **`plot_temporal_gradient_histogram()`** - Visualize temporal gradients in geographic data
+- **`plot_spatial_gradient_histogram()`** - Visualize spatial gradients in geographic data
+- **`create_geographic_animation()`** - Create animated visualizations of geographic data over time
+
+### How-To Examples
+
+#### Basic Geographic Scatter Plot
+```python
+from pega_tools.geographic import plot_geographic_scatter, Coordinate
+import matplotlib.pyplot as plt
+
+# Create sample coordinates
+coordinates = [
+    Coordinate(40.7128, -74.0060),  # New York
+    Coordinate(34.0522, -118.2437),  # Los Angeles
+    Coordinate(41.8781, -87.6298),  # Chicago
+]
+
+# Basic scatter plot
+fig = plot_geographic_scatter(
+    coordinates=coordinates,
+    title="Major US Cities",
+    figsize=(10, 8),
+    marker_size=100,
+    color_map="viridis",
+    background_map=True
+)
+plt.savefig("cities_scatter.png")
+plt.close(fig)
+```
+
+#### Scatter Plot with Values
+```python
+# Scatter plot with associated values
+values = [100, 85, 92]  # Activity levels
+
+fig = plot_geographic_scatter(
+    coordinates=coordinates,
+    values=values,
+    title="City Activity Levels",
+    marker_size=values,  # Size based on values
+    color_map="plasma",
+    colorbar_label="Activity Level",
+    alpha=0.8,
+    background_map=True
+)
+plt.savefig("cities_activity.png")
+plt.close(fig)
+```
+
+#### 2D Histogram Visualization
+```python
+from pega_tools.geographic import plot_geographic_histogram_2d
+
+# Generate more data points for histogram
+import numpy as np
+np.random.seed(42)
+
+# Create clustered data around cities
+all_coordinates = []
+for i in range(100):
+    # Randomly select a base city
+    base_cities = [(40.7128, -74.0060), (34.0522, -118.2437), (41.8781, -87.6298)]
+    base_lat, base_lon = base_cities[i % 3]
+    
+    # Add some noise
+    lat = base_lat + np.random.normal(0, 0.01)
+    lon = base_lon + np.random.normal(0, 0.01)
+    all_coordinates.append(Coordinate(lat, lon))
+
+# Create 2D histogram
+fig = plot_geographic_histogram_2d(
+    coordinates=all_coordinates,
+    title="Geographic Density Distribution",
+    figsize=(12, 8),
+    bins=30,
+    color_map="viridis",
+    log_scale=True,
+    show_colorbar=True,
+    colorbar_label="Point Density",
+    background_map=True
+)
+plt.savefig("geographic_density.png")
+plt.close(fig)
+```
+
+#### Temporal Gradient Analysis
+```python
+from pega_tools.geographic import plot_temporal_gradient_histogram
+from datetime import datetime, timedelta
+
+# Create timestamps for temporal analysis
+timestamps = []
+for i in range(100):
+    timestamp = datetime.now() - timedelta(
+        days=np.random.uniform(0, 7),
+        hours=np.random.uniform(0, 24)
+    )
+    timestamps.append(timestamp)
+
+fig = plot_temporal_gradient_histogram(
+    coordinates=all_coordinates,
+    timestamps=timestamps,
+    title="Temporal Geographic Analysis",
+    figsize=(15, 6),
+    bins=25,
+    color_map="plasma",
+    log_scale=False,
+    background_map=True
+)
+plt.savefig("temporal_gradient.png")
+plt.close(fig)
+```
+
+#### Spatial Gradient Analysis
+```python
+from pega_tools.geographic import plot_spatial_gradient_histogram
+
+# Create associated values for spatial analysis
+spatial_values = [np.random.exponential(10) for _ in range(100)]
+
+fig = plot_spatial_gradient_histogram(
+    coordinates=all_coordinates,
+    values=spatial_values,
+    title="Spatial Value Distribution",
+    figsize=(15, 6),
+    bins=30,
+    color_map="coolwarm",
+    gradient_method="density",  # or "interpolation"
+    background_map=True
+)
+plt.savefig("spatial_gradient.png")
+plt.close(fig)
+```
+
+#### Animated Geographic Visualization
+```python
+from pega_tools.geographic import create_geographic_animation
+
+# Create animation of geographic data over time
+try:
+    output_file = create_geographic_animation(
+        coordinates=all_coordinates,
+        timestamps=timestamps,
+        values=spatial_values,
+        output_file="geographic_animation.gif",
+        duration=5,
+        figsize=(10, 8)
+    )
+    print(f"Animation saved as: {output_file}")
+except ImportError:
+    print("Animation requires matplotlib.animation support")
+```
+
+### Customization Options
+
+#### Advanced Scatter Plot Parameters
+```python
+fig = plot_geographic_scatter(
+    coordinates=coordinates,
+    values=values,
+    title="Custom Scatter Plot",
+    figsize=(12, 10),
+    marker_size=[v/2 for v in values],  # Variable marker sizes
+    color_map="Spectral",
+    alpha=0.6,
+    show_colorbar=True,
+    colorbar_label="Custom Values",
+    background_map=True,
+    edgecolors='black',  # Additional matplotlib parameters
+    linewidth=0.5
+)
+```
+
+#### Advanced Histogram Parameters
+```python
+fig = plot_geographic_histogram_2d(
+    coordinates=coordinates,
+    title="Custom 2D Histogram",
+    figsize=(12, 10),
+    bins=(50, 50),  # Different bins for lat/lon
+    color_map="jet",
+    log_scale=True,
+    show_colorbar=True,
+    colorbar_label="Custom Count",
+    background_map=True,
+    alpha=0.8
+)
+```
+
+### Common Use Cases
+- **Population Density Analysis** - Visualize population distribution across regions
+- **Traffic Pattern Analysis** - Analyze movement patterns over time
+- **Environmental Monitoring** - Track changes in environmental data across locations
+- **Business Intelligence** - Visualize sales or activity data by location
+- **Research Visualization** - Present geographic research findings
+- **Real-time Monitoring** - Create animated visualizations for live data
+
+### Performance Tips
+- Use appropriate bin sizes for histograms (too many bins can create noise)
+- Consider log scale for data with wide value ranges
+- Use interpolation method for smooth spatial gradients when scipy is available
+- Limit animation frames for large datasets to improve performance
+
+---
+
 ## 📈 Forecasting Tools
 
 ### Model Categories
@@ -819,6 +1030,11 @@ def test_full_pipeline():
 | `distance_between()` | Calculate distance | `coord1, coord2, unit` | `float` |
 | `format_coordinates()` | Format display | `coord, format_type` | `string` |
 | `Geocoder.geocode()` | Address → Coord | `address` | `Coordinate` |
+| `plot_geographic_scatter()` | Create scatter plot | `coordinates, values, title, figsize, ...` | `plt.Figure` |
+| `plot_geographic_histogram_2d()` | Create 2D histogram | `coordinates, bins, title, figsize, ...` | `plt.Figure` |
+| `plot_temporal_gradient_histogram()` | Temporal gradient | `coordinates, timestamps, bins, ...` | `plt.Figure` |
+| `plot_spatial_gradient_histogram()` | Spatial gradient | `coordinates, values, bins, ...` | `plt.Figure` |
+| `create_geographic_animation()` | Create animation | `coordinates, timestamps, values, ...` | `str` |
 
 #### JSON Utilities
 | Function | Purpose | Input | Output |
@@ -1048,6 +1264,197 @@ def analyze_delivery_routes(locations, depot_location):
         }
     }
 ```
+
+### Recipe 5: Geographic Data Visualization Dashboard
+```python
+def create_geographic_dashboard(coordinates, timestamps, values, output_dir="dashboard"):
+    """Create a comprehensive geographic visualization dashboard."""
+    
+    import os
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # 1. Basic scatter plot
+    fig1 = plot_geographic_scatter(
+        coordinates=coordinates,
+        values=values,
+        title="Geographic Distribution",
+        figsize=(12, 8),
+        marker_size=values,
+        color_map="plasma",
+        background_map=True
+    )
+    fig1.savefig(f"{output_dir}/scatter_plot.png", dpi=300, bbox_inches='tight')
+    plt.close(fig1)
+    
+    # 2. Density histogram
+    fig2 = plot_geographic_histogram_2d(
+        coordinates=coordinates,
+        title="Geographic Density",
+        figsize=(12, 8),
+        bins=40,
+        color_map="viridis",
+        log_scale=True,
+        background_map=True
+    )
+    fig2.savefig(f"{output_dir}/density_histogram.png", dpi=300, bbox_inches='tight')
+    plt.close(fig2)
+    
+    # 3. Temporal analysis
+    fig3 = plot_temporal_gradient_histogram(
+        coordinates=coordinates,
+        timestamps=timestamps,
+        title="Temporal Patterns",
+        figsize=(15, 6),
+        bins=30,
+        color_map="plasma",
+        background_map=True
+    )
+    fig3.savefig(f"{output_dir}/temporal_analysis.png", dpi=300, bbox_inches='tight')
+    plt.close(fig3)
+    
+    # 4. Spatial gradient
+    fig4 = plot_spatial_gradient_histogram(
+        coordinates=coordinates,
+        values=values,
+        title="Spatial Value Distribution",
+        figsize=(15, 6),
+        bins=35,
+        color_map="coolwarm",
+        gradient_method="density",
+        background_map=True
+    )
+    fig4.savefig(f"{output_dir}/spatial_gradient.png", dpi=300, bbox_inches='tight')
+    plt.close(fig4)
+    
+    # 5. Animation
+    try:
+        animation_file = create_geographic_animation(
+            coordinates=coordinates,
+            timestamps=timestamps,
+            values=values,
+            output_file=f"{output_dir}/geographic_animation.gif",
+            duration=8,
+            figsize=(12, 8)
+        )
+        print(f"Animation created: {animation_file}")
+    except ImportError:
+        print("Animation not available (requires matplotlib.animation)")
+    
+    # 6. Generate HTML report
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Geographic Data Dashboard</title>
+        <style>
+            body {{ font-family: Arial, sans-serif; margin: 20px; }}
+            .header {{ text-align: center; margin-bottom: 30px; }}
+            .plot {{ margin: 20px 0; text-align: center; }}
+            .plot img {{ max-width: 100%; height: auto; }}
+            .stats {{ background: #f5f5f5; padding: 15px; border-radius: 5px; }}
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>🌍 Geographic Data Dashboard</h1>
+            <p>Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+        </div>
+        
+        <div class="stats">
+            <h3>📊 Summary Statistics</h3>
+            <p><strong>Total Points:</strong> {len(coordinates)}</p>
+            <p><strong>Date Range:</strong> {min(timestamps).strftime('%Y-%m-%d')} to {max(timestamps).strftime('%Y-%m-%d')}</p>
+            <p><strong>Value Range:</strong> {min(values):.2f} to {max(values):.2f}</p>
+            <p><strong>Average Value:</strong> {sum(values)/len(values):.2f}</p>
+        </div>
+        
+        <div class="plot">
+            <h3>📍 Geographic Distribution</h3>
+            <img src="scatter_plot.png" alt="Scatter Plot">
+        </div>
+        
+        <div class="plot">
+            <h3>📈 Density Distribution</h3>
+            <img src="density_histogram.png" alt="Density Histogram">
+        </div>
+        
+        <div class="plot">
+            <h3>⏰ Temporal Analysis</h3>
+            <img src="temporal_analysis.png" alt="Temporal Analysis">
+        </div>
+        
+        <div class="plot">
+            <h3>🌊 Spatial Gradient</h3>
+            <img src="spatial_gradient.png" alt="Spatial Gradient">
+        </div>
+        
+        <div class="plot">
+            <h3>🎬 Animation</h3>
+            <img src="geographic_animation.gif" alt="Geographic Animation">
+        </div>
+    </body>
+    </html>
+    """
+    
+    with open(f"{output_dir}/dashboard.html", "w") as f:
+        f.write(html_content)
+    
+    print(f"✅ Dashboard created in '{output_dir}/' directory")
+    print(f"📄 Open '{output_dir}/dashboard.html' in your browser to view the dashboard")
+    
+    return {
+        'scatter_plot': f"{output_dir}/scatter_plot.png",
+        'density_histogram': f"{output_dir}/density_histogram.png",
+        'temporal_analysis': f"{output_dir}/temporal_analysis.png",
+        'spatial_gradient': f"{output_dir}/spatial_gradient.png",
+        'animation': f"{output_dir}/geographic_animation.gif",
+        'html_report': f"{output_dir}/dashboard.html"
+    }
+
+# Usage example
+def example_dashboard():
+    """Example of creating a geographic dashboard."""
+    from datetime import datetime, timedelta
+    import numpy as np
+    
+    # Generate sample data
+    np.random.seed(42)
+    n_points = 200
+    
+    # Create coordinates around multiple cities
+    base_cities = [
+        (40.7128, -74.0060),  # New York
+        (34.0522, -118.2437),  # Los Angeles
+        (41.8781, -87.6298),  # Chicago
+        (29.7604, -95.3698),  # Houston
+    ]
+    
+    coordinates = []
+    timestamps = []
+    values = []
+    
+    for i in range(n_points):
+        # Select random base city
+        base_lat, base_lon = base_cities[i % len(base_cities)]
+        
+        # Add noise
+        lat = base_lat + np.random.normal(0, 0.02)
+        lon = base_lon + np.random.normal(0, 0.02)
+        coordinates.append(Coordinate(lat, lon))
+        
+        # Generate timestamp over last month
+        timestamp = datetime.now() - timedelta(
+            days=np.random.uniform(0, 30),
+            hours=np.random.uniform(0, 24)
+        )
+        timestamps.append(timestamp)
+        
+        # Generate value
+        values.append(np.random.exponential(15))
+    
+    # Create dashboard
+    dashboard_files = create_geographic_dashboard(coordinates, timestamps, values)
+    return dashboard_files
 
 ---
 
